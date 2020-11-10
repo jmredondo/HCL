@@ -1,0 +1,215 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if and (eq .Values.common.environmentType "share") (eq .Values.common.searchEngine "elastic") }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{.Values.queryApp.name}}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector: 
+    matchLabels:
+      chart: {{ .Chart.Name }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{.Values.queryApp.name}}
+      group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}
+  replicas: {{ .Values.queryApp.replica.data }}
+  template:
+    metadata:
+      annotations:
+        productName: "HCL Commerce"
+        productVersion: {{ .Values.common.productVersion | quote }}
+        deployTime: {{ now }}
+      labels:
+        app: HCL-Commerce
+        chart: {{ .Chart.Name }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{.Values.queryApp.name}}
+        group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}
+    spec:
+      affinity:
+        nodeAffinity:
+           {{- if .Values.queryApp.nodeLabel }}
+           requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: wc-node-select-flag
+                  operator: In
+                  values: 
+                  - {{ .Values.queryApp.nodeLabel }}
+           {{- else }}
+           requiredDuringSchedulingIgnoredDuringExecution:
+           {{- include "nodeAffinityRequiredDuringScheduling" . | indent 8 }}
+           {{- end }}   
+           preferredDuringSchedulingIgnoredDuringExecution:
+           {{- include "nodeAffinityPreferredDuringScheduling" . | indent 8 }}
+      {{- include "queryapp-podAntiAffinity" . | indent 6 }}   
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      serviceAccountName: {{ .Values.common.serviceAccountName | default "default" }}
+      volumes:
+        - name: logs-sharing
+          emptyDir: {}
+      {{- if .Values.common.bindingConfigMap }}
+        - name: config-volume
+          configMap:
+            name: {{ .Values.common.bindingConfigMap }} 
+      {{- end }}
+      {{- if and .Values.fileBeat.enabled .Values.queryApp.fileBeatConfigMap }}
+        - name: filebeat-config-query-app
+          configMap:
+            name: {{ .Values.queryApp.fileBeatConfigMap }}
+      {{- end }}
+      {{- if .Values.common.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.common.imagePullSecrets }}
+      {{- end }}
+      containers:
+      - name: query-app
+        image: "{{ .Values.common.imageRepo }}{{ .Values.queryApp.image }}:{{ .Values.queryApp.tag }}"
+        {{- if .Values.common.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.queryApp.resources.data | indent 12 }}
+        env:
+        - name: "LICENSE"
+          value: {{ .Values.license | quote }}
+        - name: "CONFIGURE_MODE"
+          value: {{ .Values.common.configureMode | quote }}
+        - name: "ENVIRONMENT"
+          value: {{ .Values.common.environmentName | quote }}
+        - name: "TENANT"
+          value: {{ .Values.common.tenant | quote }}
+        - name: "ENVTYPE"
+          value: data
+        - name: "DOMAIN_NAME"
+          value: "{{ .Release.Namespace }}.svc.cluster.local"
+        {{- if .Values.metrics.enabled }}
+        - name: "EXPOSE_METRICS"
+          value: "true"
+        {{- end }}
+        - name: "VAULT_CA"
+          value: {{ .Values.vaultCA.enabled | quote }}
+        {{- if (or (eq .Values.common.configureMode "Vault") .Values.vaultCA.enabled) }}
+        - name: "VAULT_URL"
+          value: {{ .Values.common.vaultUrl | quote  }}
+        {{- if .Values.common.vaultTokenSecret }}
+        - name: "VAULT_TOKEN"
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.common.vaultTokenSecret }}
+              key: VAULT_TOKEN
+        {{- end }}
+        {{- end }}       
+{{- if get .Values.queryApp.envParameters "data" }}
+     {{- range $key, $value := get .Values.queryApp.envParameters "data" }}
+        - name: {{ $key | quote }}
+          value: {{ $value | quote }}
+     {{- end }} 
+{{- end }}
+        ports: 
+        - containerPort: 30900
+          name: port30900
+          protocol: TCP
+        - containerPort: 30901
+          name: port30901
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 30901
+            scheme: HTTPS
+          initialDelaySeconds: 240
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 30901
+            scheme: HTTPS
+        securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+        volumeMounts:
+          - name: logs-sharing
+            mountPath: /opt/WebSphere/Liberty/usr/servers/default/logs/container
+        {{- if .Values.common.bindingConfigMap }}
+          - name: config-volume
+            mountPath: /SETUP/ext-config/config.properties
+            subPath: config.properties
+            readOnly: false      
+        {{- end }}
+{{- if .Values.fileBeat.enabled }} 
+      - name: filebeat
+        image: "{{ .Values.common.imageRepo }}{{ .Values.fileBeat.image }}:{{ .Values.fileBeat.tag }}"
+        {{- if .Values.common.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.fileBeat.resources | indent 12 }}
+        args: ["-indexName", "{{ .Values.common.tenant }}-{{ .Values.common.environmentName}}", "-targetELK", "{{ .Values.fileBeat.elkServer }}", "-componentType", "query-app"]
+        securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+        volumeMounts:
+        - name: logs-sharing
+          mountPath: /log
+{{- if .Values.queryApp.fileBeatConfigMap }}
+        - name: filebeat-config-query-app
+          mountPath: /etc/filebeat
+{{- end }}
+{{- end }}
+{{- end }}

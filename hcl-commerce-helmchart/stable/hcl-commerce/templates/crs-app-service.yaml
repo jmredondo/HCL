@@ -1,0 +1,34 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if and .Values.crsApp.enabled (ne .Values.common.environmentType "share") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name:  {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}{{.Values.crsApp.name}}
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}{{.Values.crsApp.name}}
+    group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}
+  annotations:
+    cloud.google.com/app-protocols: '{"port8443":"HTTPS","port8080":"HTTP"}'
+spec:
+  type: NodePort
+  ports:
+  - port: 8443
+    name: port8443
+  - port: 8080
+    name: port8080
+  {{- if .Values.metrics.enabled }}
+  - port: 8280
+    name: metrics
+  {{- end }}
+  selector:
+    component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}{{.Values.crsApp.name}}
+{{- end }}

@@ -1,0 +1,28 @@
+{{- if eq .Values.common.searchEngine "elastic" }}
+  {{- $redis_check_fail_msg := "\n\n########################################\nHCL Commerce\nHelm Configuration Validation Error\n########################################\nHCL Commerce with Elasticsearch based data platform requires Redis.\nPlease enable 'redis.enabled' under 'hclCache.configMap.cache_cfg_ext' in your values file." }}
+  {{- $cfg_ext := tpl .Values.hclCache.configMap.cache_cfg_ext . | fromYaml}}
+  {{- if not $cfg_ext.redis.enabled }}
+    {{- fail $redis_check_fail_msg }}
+  {{- end }}
+  
+{{- end }}
+
+{{- if and .Values.hclCache.configMap (ne .Values.common.environmentType "share") }}
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}-hcl-cache-config
+data:
+  cache_cfg-ext.yaml: |-
+    # cache_cfg-ext.yaml content read from values
+{{ tpl .Values.hclCache.configMap.cache_cfg_ext . | indent 4}}
+  redis_cfg.yaml: |-
+    # redis_cfg.yaml content read from values
+{{ tpl .Values.hclCache.configMap.redis_cfg . | indent 4 }}
+{{- end }}

@@ -1,0 +1,34 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if and (eq .Values.common.environmentType "auth") (eq .Values.common.searchEngine "solr")}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{.Values.searchAppMaster.name}}
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{.Values.searchAppMaster.name}}
+    group: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    cloud.google.com/app-protocols: '{"port3738":"HTTPS","port3737":"HTTP"}'
+spec:
+  type: NodePort
+  ports:
+  - port: 3737
+    name: port3737
+  - port: 3738
+    name: port3738
+  {{- if .Values.metrics.enabled }}
+  - port: 3280
+    name: metrics
+  {{- end }}
+  selector:
+    component: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{.Values.searchAppMaster.name}}
+{{- end -}}

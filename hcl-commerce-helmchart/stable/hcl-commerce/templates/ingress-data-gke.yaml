@@ -1,0 +1,43 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if and (eq .Values.common.environmentType "share") (.Values.common.dataIngressEnabled) (eq .Values.common.ingressController "gke") }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}data-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: gce
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}
+spec:
+  rules:
+  - host: nifi.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.externalDomain }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.nifiApp.name}}
+          servicePort: 30600
+  - host: ingest.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.externalDomain }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.ingestApp.name}}
+          servicePort: 30800
+  - host: query.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.externalDomain }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.queryApp.name}}
+          servicePort: 30900
+{{- end }}

@@ -1,0 +1,250 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if ne .Values.common.environmentType "share" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}{{.Values.tsWeb.name}}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector: 
+    matchLabels:
+      {{- if .Values.backwardCompatibility.selector.app }}
+      app: {{ .Values.backwardCompatibility.selector.app }}
+      {{- end }}
+      {{- if .Values.backwardCompatibility.selector.chart }}
+      chart: {{ .Values.backwardCompatibility.selector.chart }}
+      {{- else }}
+      chart: {{ .Chart.Name }}
+      {{- end }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}{{.Values.tsWeb.name}}
+      group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}
+      {{- range $key, $value := .Values.backwardCompatibility.selector.extraSelector }}
+      {{ $key }}: {{ $value | quote }}
+      {{- end }}
+  replicas: {{ .Values.tsWeb.replica }}
+  template:
+    metadata:
+      annotations:
+        productName: "HCL Commerce"
+        productVersion: {{ .Values.common.productVersion | quote }}
+        deployTime: {{ now }}
+      labels:
+        {{- if .Values.backwardCompatibility.selector.app }}
+        app: {{ .Values.backwardCompatibility.selector.app }}
+        {{- else }}
+        app: HCL-Commerce
+        {{- end }}
+        {{- if .Values.backwardCompatibility.selector.chart }}
+        chart: {{ .Values.backwardCompatibility.selector.chart }}
+        {{- else }}
+        chart: {{ .Chart.Name }}
+        {{- end }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}{{.Values.tsWeb.name}}
+        group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}
+        {{- range $key, $value := .Values.backwardCompatibility.selector.extraSelector }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      affinity:
+        nodeAffinity:
+           {{- if .Values.tsWeb.nodeLabel }}
+           requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: wc-node-select-flag
+                  operator: In
+                  values: 
+                  - {{ .Values.tsWeb.nodeLabel }}
+           {{- else }}
+           requiredDuringSchedulingIgnoredDuringExecution:
+           {{- include "nodeAffinityRequiredDuringScheduling" . | indent 8 }}
+           {{- end }}   
+           preferredDuringSchedulingIgnoredDuringExecution:
+           {{- include "nodeAffinityPreferredDuringScheduling" . | indent 8 }}
+      {{- include "tsweb-podAntiAffinity" . | indent 6 }}   
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      serviceAccountName: {{ .Values.common.serviceAccountName | default "default" }}
+      initContainers:
+      - name: transaction-web-dependence-check
+        image: "{{ .Values.common.imageRepo }}{{ .Values.supportC.image }}:{{ .Values.supportC.tag }}"
+        {{- if .Values.common.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+        {{- end }}
+        args: ['depcheck', '-component','transaction-web','-tenant',{{ .Values.common.tenant }},'-env',{{ .Values.common.environmentName}},'-envtype',{{ .Values.common.environmentType }},'-namespace',{{ .Release.Namespace }},'-interval_time','20','-expect_during_time','600','-timeout','5','-spiuser_pwd_encrypte',{{ .Values.common.spiUserPwdBase64 }}]
+      volumes:
+        - name: logs-sharing
+          emptyDir: {}
+      {{- if .Values.common.bindingConfigMap }}
+        - name: config-volume
+          configMap:
+            name: {{ .Values.common.bindingConfigMap }} 
+      {{- end }}
+      {{- if and .Values.fileBeat.enabled .Values.tsWeb.fileBeatConfigMap }}
+        - name: filebeat-config-ts-web
+          configMap:
+            name: {{ .Values.tsWeb.fileBeatConfigMap }}
+      {{- end }}
+      {{- if .Values.common.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.common.imagePullSecrets }}
+      {{- end }}
+      containers:
+      - name: ts-web
+        image: "{{ .Values.common.imageRepo }}{{ .Values.tsWeb.image }}:{{ .Values.tsWeb.tag }}"
+        {{- if .Values.common.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.tsWeb.resources | indent 12 }}
+        env:
+        - name: "LICENSE"
+          value: {{ .Values.license | quote }}
+        {{- if .Values.common.commerceVersion }}
+        {{- if (or (eq .Values.common.commerceVersion "9.0.0.1") (eq .Values.common.commerceVersion "9.0.0.0")) }}
+          {{- if .Values.common.overridePreconfig }}
+        - name: "OVERRIDE_PRECONFIG"
+          value: {{ .Values.common.overridePreconfig | quote }}
+          {{- end }}
+        {{- end }}
+        {{- else }}
+        - name: "CONFIGURE_MODE"
+          value: {{ .Values.common.configureMode | quote }}  
+        {{- end }}
+        - name: "ENVIRONMENT"
+          value: {{ .Values.common.environmentName | quote }}
+        - name: "TENANT"
+          value: {{ .Values.common.tenant | quote }}
+        - name: "ENVTYPE"
+          value: {{ .Values.common.environmentType | quote }}
+        - name: "DOMAIN_NAME"
+          value: "{{ .Release.Namespace }}.svc.cluster.local"
+        - name: "VAULT_CA"
+          value: {{ .Values.vaultCA.enabled | quote }}
+        {{- if (or (eq .Values.common.configureMode "Vault") .Values.vaultCA.enabled) }}
+        - name: "VAULT_URL"
+          value: {{ .Values.common.vaultUrl | quote  }}
+        {{- if .Values.common.vaultTokenSecret }}
+        - name: "VAULT_TOKEN"
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.common.vaultTokenSecret }}
+              key: VAULT_TOKEN
+        {{- end }}
+        {{- end }}       
+  {{- if get .Values.tsWeb.envParameters .Values.common.environmentType }}
+    {{- range $key, $value := get .Values.tsWeb.envParameters .Values.common.environmentType }}
+        - name: {{ $key | quote }}
+          value: {{ $value | quote }}
+    {{- end }} 
+  {{- end }} 
+        ports: 
+        - containerPort: 8000
+          name: port8000
+          protocol: TCP
+        - containerPort: 8001
+          name: port8001
+          protocol: TCP
+        - containerPort: 8002
+          name: port8002
+          protocol: TCP
+        - containerPort: 8004
+          name: port8004
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 240
+          timeoutSeconds: 300
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+        securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+        volumeMounts:
+          - name: logs-sharing
+            mountPath: /opt/WebSphere/HTTPServer/logs/container
+        {{- if .Values.common.bindingConfigMap }}
+          - name: config-volume
+            mountPath: /SETUP/ext-config/config.properties
+            subPath: config.properties
+            readOnly: false      
+        {{- end }}
+{{- if .Values.fileBeat.enabled }} 
+      - name: filebeat
+        image: "{{ .Values.common.imageRepo }}{{ .Values.fileBeat.image }}:{{ .Values.fileBeat.tag }}"
+        {{- if .Values.common.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.fileBeat.resources | indent 12 }}
+        args: ["-indexName", "{{ .Values.common.tenant }}-{{ .Values.common.environmentName}}-{{ .Values.common.environmentType }}", "-targetELK", "{{ .Values.fileBeat.elkServer }}", "-componentType", "ts-web"]
+        securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+        volumeMounts:
+        - name: logs-sharing
+          mountPath: /log
+{{- if .Values.tsWeb.fileBeatConfigMap }}
+        - name: filebeat-config-ts-web
+          mountPath: /etc/filebeat
+{{- end }}
+{{- end }}
+{{- end }}

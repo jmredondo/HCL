@@ -1,0 +1,30 @@
+{{- if and (.Values.metrics.enabled) (.Values.metrics.serviceMonitor.enabled) (eq .Values.common.environmentType "share") (eq .Values.common.searchEngine "elastic") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name:  {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.queryApp.name}}
+  {{- if .Values.metrics.serviceMonitor.namespace }}
+  namespace: {{ .Values.metrics.serviceMonitor.namespace }}
+  {{- end }}
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.queryApp.name}}
+    group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}
+    {{- range $key, $value := .Values.metrics.serviceMonitor.selector }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  endpoints:
+  - port: metrics
+    interval: {{ .Values.metrics.serviceMonitor.interval }}
+    path: /monitor/metrics
+  selector:
+    matchLabels:
+      component: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.queryApp.name}}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+{{- end -}}

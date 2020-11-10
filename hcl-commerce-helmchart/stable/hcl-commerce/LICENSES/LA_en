@@ -1,0 +1,197 @@
+LICENSE INFORMATION
+
+The Programs listed below are licensed under the following License Information terms and conditions in addition to the Program license terms previously agreed to by Customer and HCL.
+
+Program Name: HCL Commerce Enterprise Version 9.1
+
+The following standard terms apply to Licensee's use of the Program.
+
+Limited use right
+
+As described in the HCL Master License Agreement (the "MLA") and this License Information, HCL grants Licensee a limited right to use the Program.  This right is limited to the level of Authorized Use, such as a Processor Value Unit ("PVU"), a Resource Value Unit ("RVU"), a Value Unit ("VU"), or other specified level of use, paid for by Licensee as evidenced in the Proof of Entitlement. Licensee's use may also be limited to a specified machine, or only as a Supporting Program, or subject to other restrictions. As Licensee has not paid for all of the economic value of the Program, no other use is permitted without the payment of additional fees. In addition, Licensee is not authorized to use the Program to provide commercial IT services to any third party, to provide commercial hosting or timesharing, or to sublicense, rent, or lease the Program unless expressly provided for in the applicable agreements under which Licensee obtains authorizations to use the Program. Additional rights may be available to Licensee subject to the payment of additional fees or under different or supplementary terms. HCL reserves the right to determine whether to make such additional rights available to Licensee.
+
+Specifications
+
+Program's specifications can be found in the collective Description and Technical Information sections of the Program's Announcement Letters.
+
+Prohibited Uses
+
+Licensee may not use or authorize others to use the Program, alone or in combination with other services or products, in support of any of the following high risk activities: design, construction, control, or maintenance of nuclear facilities, mass transit systems, air traffic control systems, automotive control systems, weapons systems, or aircraft navigation or communications, or any other activity where program failure could give rise to a material threat of death or serious personal injury.
+
+Supporting Programs
+
+Licensee is authorized to install and use the Supporting Programs identified below. Licensee is authorized to install and use such Supporting Programs only to support Licensee's use of the Principal Program under this Agreement. The phrase "to support Licensee's use" would only include those uses that are necessary or otherwise directly related to a licensed use of the Principal Program or another Supporting Program. The Supporting Programs may not be used for any other purpose. A Supporting Program may be accompanied by license terms, and those terms, if any, apply to Licensee's use of that Supporting Program. In the event of conflict, the terms in this License Information document supersede the Supporting Program's terms. Licensee must obtain sufficient entitlements to the Program, as a whole, to cover Licensee's installation and use of all of the Supporting Programs, unless separate entitlements are provided within this License Information document. For example, if this Program were licensed on a PVU (Processor Value Unit) basis and Licensee were to install the Principal Program or a Supporting Program on a 100 PVU machine (physical or virtual) and another Supporting Program on a second 100 PVU machine, Licensee would be required to obtain 200 PVU entitlements to the Program.
+
+Supporting Programs:
+IBM WebSphere Application Server V9.0 FP 9.0.5.3
+IBM WebSphere Application Server Liberty 20.0
+IBM Db2 Enterprise Server Edition 11.5
+IBM Db2 OEM High Capacity Add-on 11.5
+IBM Data Server Manager Enterprise Edition V2.1
+IBM Security Directory Suite 8.0
+HCL Commerce Developer 9.1
+
+Prohibited Components
+
+Notwithstanding any provision in the Agreement, Licensee is not authorized to use any of the following components or functions of the Program:
+IBM Security Directory Server Proxy server (of IBM Security Directory Suite)
+Whitepages Application (of IBM Security Directory Suite)
+Db2 Connect (of IBM Db2 Advanced Workgroup Server Edition)
+Federation with Db2 for IBM i and Db2 for z/OS(R) data sources (of IBM Db2 Advanced
+Workgroup Server Edition)
+Federation with all other data sources, including Oracle (of IBM Db2 Advanced Workgroup Server Edition)
+IBM(r) Db2 Merge Backup (of IBM Db2 Advanced Workgroup Server Edition)
+IBM(r) Db2 Recovery Expert (of IBM Db2 Advanced Workgroup Server Edition)
+IBM InfoSphere(R) Change Data Capture for Db2 (of IBM Db2 Advanced Workgroup Server Edition)
+IBM InfoSphere CDC Access Server (of IBM Db2 Advanced Workgroup Server Edition)
+IBM InfoSphere CDC Management Console (of IBM Db2 Advanced Workgroup Server Edition)
+IBM InfoSphere Data Architect (of IBM Db2 Advanced Workgroup Server Edition)
+IBM Cognos Analytics 11.0 (of IBM Db2 Advanced Workgroup Server Edition)
+IBM WebSphere MQ 9.0 (of IBM Db2 Advanced Workgroup Server Edition)
+
+Separately Licensed Code
+
+The provisions of this paragraph do not apply to the extent they are held to be invalid or unenforceable under the law that governs this license. Each of the components listed below is considered "Separately Licensed Code". HCL Separately Licensed Code is licensed to Licensee under the terms of the applicable third party license agreement(s) set forth in the MLA that accompanies the Program. Notwithstanding any of the terms in the Agreement, or any other agreement Licensee may have with HCL, the terms of such third party license agreement(s) governs Licensee's use of all Separately Licensed Code unless otherwise noted below.
+
+- IBM WebSphere Extreme Scale Client
+
+Future Program updates or fixes may contain additional Separately Licensed Code. Such additional Separately Licensed Code and related licenses are listed in another MLA that accompanies the Program update or fix. Licensee acknowledges that Licensee has read and agrees to the license agreements contained in the MLA. If Licensee does not agree to the terms of these third party license agreements, Licensee may not use the Separately Licensed Code.
+
+Note: Notwithstanding any of the terms in the third party license agreement, the Agreement, or any other agreement Licensee may have with HCL:
+a)	HCL provides this Separately Licensed Code to Licensee WITHOUT WARRANTIES OF ANY KIND;
+b)	HCL DISCLAIMS ANY AND ALL EXPRESS AND IMPLIED WARRANTIES AND CONDITIONS INCLUDING, BUT NOT LIMITED TO, THE WARRANTY OF TITLE, NON-INFRINGEMENT OR INTERFERENCE AND THE IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, WITH RESPECT TO THE SEPARATELY LICENSED CODE;
+c)	HCL is not liable to Licensee, and will not defend, indemnify, or hold Licensee harmless for any claims arising from or related to the Separately Licensed Code; and
+d)	HCL is not liable for any direct, indirect, incidental, special, exemplary, punitive or consequential damages including, but not limited to, lost data, lost savings, and lost profits, with respect to the Separately Licensed Code.
+
+Notwithstanding these exclusions, in Germany and Austria, HCL's warranty and liability for the Separately Licensed Code is governed only by the respective terms applicable for Germany and Austria in HCL license agreements.
+
+Note: HCL may provide limited support for some Separately Licensed Code. If such support is available, the details and any additional terms related to such support will be set forth in the License Information document.
+
+Redistributables
+
+If the Program includes components that are Redistributable, they will be identified in the REDIST file that accompanies the Program. In addition to the license rights granted in the Agreement, Licensee may distribute the Redistributables subject to the following terms:
+a)	Redistribution must be in object code form only and must conform to all directions, instruction and specifications in the Program's accompanying REDIST or documentation;
+b)	If the Program's accompanying documentation expressly allows Licensee to modify the Redistributables, such modification must conform to all directions, instruction and specifications in that documentation and these modifications, if any, must be treated as Redistributables;
+c)	Redistributables may be distributed only as part of Licensee's application that was developed using the Program ("Licensee's Application") and only to support Licensee's customers in connection with their use of Licensee's Application. Licensee's Application must constitute significant value add such that the Redistributables are not a substantial motivation for the acquisition by end users of Licensee's software product;
+d)	If the Redistributables include a Java Runtime Environment, Licensee must also include other non-Java Redistributables with Licensee's Application, unless the Application is designed to run only on general computer devices (for example, laptops, desktops and servers) and not on handheld or other pervasive devices (i.e., devices that contain a microprocessor but do not have computing as their primary purpose);
+e)	Licensee may not remove any copyright or notice files contained in the Redistributables;
+f)	Licensee must hold HCL, its suppliers or distributors harmless from and against any claim arising out of the use or distribution of Licensee's Application;
+g)	Licensee may not use the same path name as the original Redistributable files/modules;
+h)	Licensee may not use HCL's, its suppliers or distributors names or trademarks in connection with the marketing of Licensee's Application without HCL's or that supplier's or distributor's prior written consent;
+i)	HCL, its suppliers and distributors provide the Redistributables and related documentation without obligation of support and "AS IS", WITH NO WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING THE WARRANTY OF TITLE, NON-INFRINGEMENT OR NON-INTERFERENCE AND THE IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE;
+j)	Licensee is responsible for all technical assistance for Licensee's Application and any modifications to the Redistributables; and
+k)	Licensee's license agreement with the end user of Licensee's Application must notify the end user that the Redistributables or their modifications may not be i) used for any purpose other than to enable Licensee's Application, ii) copied (except for backup purposes), iii) further distributed or transferred without Licensee's Application or iv) reverse assembled, reverse compiled, or otherwise translated except as specifically permitted by law and without the possibility of a contractual waiver. Furthermore, Licensee's license agreement must be at least as protective of HCL as the terms of this Agreement.
+
+Source Components and Sample Materials
+
+The Program may include some components in source code form ("Source Components") and other materials identified as Sample Materials. Licensee may copy and modify Source Components and Sample Materials for internal use only provided such use is within the limits of the license rights under this Agreement, provided however that Licensee may not alter or delete any copyright information or notices contained in the Source Components or Sample Materials. HCL provides the Source Components and Sample Materials without obligation of support and "AS IS", WITH NO WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING THE WARRANTY OF TITLE, NON-INFRINGEMENT OR NON-INTERFERENCE AND THE IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+For Source Components and Sample Materials listed in a Program's REDIST file, Licensee may redistribute modified versions of those Source Components or Sample Materials consistent with the terms of this license and any instructions in the REDIST file.
+Export and Import Restrictions
+
+This Program may contain cryptography. Transfer to, or use by, users of the Program may be prohibited or subject to export or import laws, regulations or policies, including those of the United States Export Administration Regulations. Licensee assumes all responsibility for complying with all applicable laws, regulations, and policies regarding the export, import, or use of this Program, including but not limited to, U.S. restrictions on exports or reexports.
+
+Third Party Data and Services
+
+The Program may contain links to or be used to access third party data services, databases, web services, software, or other third party content (all, "content"). Access to this content is provided "AS-IS", WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING THE WARRANTY OF TITLE, NON-INFRINGEMENT OR NON-INTERFERENCE AND THE IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Access can be terminated by the relevant third parties at their sole discretion at any time. Licensee may be required to enter into separate agreements with the third parties for the access to or use of such content. HCL is not a party to any such separate agreements and as an express condition of this license Licensee agrees to comply with the terms of such separate agreements.
+
+The following units of measure may apply to Licensee's use of the Program.
+
+Processor Value Unit (PVU)
+
+Processor Value Unit (PVU) is a unit of measure by which the Program can be licensed. The number of PVU entitlements required is based on the processor technology (defined within the PVU Table by Processor Vendor, Brand, Type and Model Number at http://www.ibm.com/software/lotus/passportadvantage/pvu_licensing_for_customers.html) and the number of processors made available to the Program. HCL continues to define a processor, for the purpose of PVU-based licensing, to be each processor core on a chip. A dual-core processor chip, for example, has two processor cores.
+
+Licensee can deploy the Program using either Full Capacity licensing or Virtualization Capacity (Sub-Capacity) licensing according to the Passport Advantage Sub-Capacity Licensing Terms (see webpage below). If using Full Capacity licensing, Licensee must obtain PVU entitlements sufficient to cover all activated processor cores* in the physical hardware environment made available to or managed by the Program, except for those servers from which the Program has been permanently removed. If using Virtualization Capacity licensing, Licensee must obtain entitlements sufficient to cover all activated processor cores made available to or managed by the Program, as defined according to the Virtualization Capacity License Counting Rules at http://www.ibm.com/software/lotus/passportadvantage/Counting_Software_licenses_using_specific_virtualization_technologies.html.
+
+* The transaction and xC container(s) shall be considered when determining the total PVUs required for license compliance. Store container(s) shall not be considered when calculating the PVU consumption of the entitled PVU license.
+
+* An Activated processor core is a processor core that is available for use in a physical or virtual server, regardless of whether the capacity of the processor core can be or is limited through virtualization technologies, operating system commands, BIOS settings, or similar restrictions.
+
+Resource Value Unit (RVU)
+
+Resource Value Unit (RVU) is a unit of measure by which the Program can be licensed. RVU Proofs of Entitlement are based on the number of units of a specific resource used or managed by the Program. Licensee must obtain sufficient entitlements for the number of RVUs required for Licensee's environment for the specific resources as specified in the table below. RVU entitlements are specific to the Program and the type of resource and may not be exchanged, interchanged, or aggregated with RVU entitlements of another program or resource.
+
+In addition to the above, the following terms apply to Licensee's use of the Program.
+
+The Resources for the purpose of RVU calculation are the total number of 100,000 Order Lines processed by the Program in any consecutive 12 month period. An Order is any transaction that has been submitted for fulfilment. Order Lines are the line items on Orders managed by the Program.
+
+Resource Value Unit Conversion Table
+-	From 1 to 2 Resources, 1.00 RVU per Resource
+-	From 3 to 5 Resources, 2 RVUs plus 0.90 RVUs per Resource above 2
+-	From 6 to 10 Resources, 5 RVUs plus 0.80 RVUs per Resource above 5
+-	From 11 to 20 Resources, 9 RVUs plus 0.70 RVUs per Resource above 10
+-	From 21 to 35 Resources, 16 RVUs plus 0.60 RVUs per Resource above 20
+-	From 36 to 50 Resources, 25 RVUs plus 0.45 RVUs per Resource above 35
+-	For more than 50 Resources, 32 RVUs plus 0.30 RVUs per Resource above 50
+
+1.0 Definitions
+
+The following terms are defined for the purposes of this license:
+
+Asset Store - A store that contains a collection of sharable resources (business artifacts, business processes, and storefront assets) that can be leveraged in other types of stores. An asset store does not perform or record business transactions; it is simply a holder of assets that can be used by other stores.
+
+Catalog Asset Store - A type of Asset Store that is a collection of catalog artifacts that creates a virtual catalog. A Catalog Asset Store can be identified and counted by a unique STORE_ID key in the STORE table in HCL Commerce database, and by a value of CPS in the STORETYPE column of the STORE table.
+
+Cold Standby - Use of a HCL Commerce server program for standby purposes that is installed and configured but not running
+
+Contract - An agreement representing the terms and conditions that apply to a transaction in HCL Commerce. Contracts can be identified and counted in the CONTRACT table in HCL Commerce database.
+
+Extended Site - A storefront created in HCL Commerce through the Store Creation wizard. It is accessible to customers for online business through any channel and/or touchpoint including, but not limited to, web, mobile devices, call centers, kiosks, and in-store solutions. A Store can be identified and counted by a unique STORE_ID key in the STORE table in HCL Commerce database, and by a value of MHS or BMH in the STORETYPE column of the STORE table.
+
+Organization - An entity that owns resources such as organization units, users, Stores, and Contracts in HCL Commerce. Organizations can be identified and counted in the ORGENTITY table in HCL Commerce database
+
+Production - Use of a HCL Commerce server program to operate one or more live Stores
+
+Staging - Use of a HCL Commerce server program in which Store information and business content like catalog and promotions are managed in a separate environment from a Production server, and where incremental changes/updates are made, tested with fully developed application in preparation for promotion to the Production utilizing staging server utilities including but not limited to stagingprop, stagingcopy, and fileprop. Staging is meant for final review and end user sign off on the fully developed solution prior to promoting to Production.
+
+Store - A storefront deployed in HCL Commerce that is accessible to customers for online business through any channel and/or touchpoint including, but limited not to, web, mobile devices, call centers, kiosks, and in-store solutions. A Store can be identified and counted by a unique STORE_ID key in the STORE table in HCL Commerce database, and by a value of B2C or B2B in the STORETYPE column of the STORE table.
+
+Storefront Asset Store - A type of Asset Store that is a collection of JSP files, commands, business processes (for example, order processing), business policies and access control policies that create a virtual storefront. A Storefront Asset Store can be identified and counted by a unique STORE_ID key in the STORE table in HCL Commerce database, and by a value of MPS in the STORETYPE column of the STORE table.
+
+Test - Use of a HCL Commerce server program for testing of a HCL Commerce solution, including but not limited to functional, integration, system, performance, and load testing. Testing does not include Staging, provided that Testing may include testing of Staging server utilities and functions.
+
+arm Standby - Use of a HCL Commerce server program for standby purposes that is installed, configured and running but not performing any e-Commerce related activities, including Production or Staging (but may be performing HCL Commerce database replication).
+
+2.0 Authorized Use
+
+The following restrictions apply to HCL Commerce Enterprise:
+
+If Licensee is entitled under the PVU metric, Licensee may use the Program to operate a maximum of one (1) Store and one (1) associated Contract and only using the Organizations created by the Program per 100 Processor Value Units ("PVUs") (120 PVUs for POWER processors).
+
+If Licensee is entitled under the RVU metric, Licensee may use the Program to operate a maximum of one (1) Store and one (1) associated Contract and only using the Organizations created by the Program per 1 RVU.
+
+The following terms apply to all Programs:
+
+If Licensee is entitled under the PVU metric, Licensee must be fully licensed for a sufficient number of PVU entitlements for each server used for Staging and Production server environments. Test, Cold Standby, and Warm Standby server environments do not require additional PVU entitlements (provided that Test, Cold Standby and Warm Standby server environments are not used for Production or Staging purposes).
+
+If Licensee is entitled under the RVU metric, Licensee must be fully licensed for a sufficient number of RVU entitlements for the Resources managed by the Production server environments. Staging, Test, Cold Standby, and Warm Standby server environments do not require additional RVU entitlements (provided that the Staging, Test, Cold Standby and Warm Standby server environments are not used for Production purposes).
+
+2.1 HCL Commerce Search
+
+Licensee is authorized to install the HCL Commerce Search component (Solr, Elastic Search, and/or CoreNLP) only for processing search queries generated by HCL Commerce, and not for serving other applications or web sites.  Licensee may install the HCL Commerce Search component, and WebSphere Application Server in support of the Search component, on one or more different machine(s) from where Licensee has installed HCL Commerce, provided that Licensee's use of the HCL Commerce Search component and WebSphere Application Server in support of the Search component may not exceed the maximum resource or other charge unit capacity for which Licensee is licensed to use HCL Commerce under its Proof of Entitlement.
+
+2.2 Additional terms for Sample Materials
+
+Sample Material included with the Program include Starter Stores. "Starter Store" means a functional sample online Store provided in a store archive format with the Program, and are samples designed to be used as a base from which a customized online Stores can be created. Starter Store sample materials may include the names of individuals, companies, brands and products in order to illustrate concepts as completely as possible. All of these names are fictitious and any similarity to the names and addresses used by actual persons or business enterprises is entirely coincidental. Starter Store sample materials may also contain text, images and/or similar content that are the copyrighted materials of HCL or third parties ("Sample Content"). Notwithstanding the "Sample Materials" section of this License Information, Sample Content is provided for illustrative purposes only and Licensee is not permitted to copy, display, retransmit or otherwise use or re-use the Sample Content (including, but not limited to, in Licensee's production Store(s)).
+
+Other Sample Materials included with the Program include code or script samples to illustrate HCL Commerce functions and they are located in [install]\samples directory where [install] is the user-specified or the default Program install directory.
+
+3.0 Supporting Program Details
+
+IBM Db2 Advanced Workgroup Server Edition
+- Entitlement: Ratio 1/1 (if licensed under the PVU metric), No Metric(if licensed under the RVU metric)
+- Use Limitations: Use by Principal Program
+
+IBM Db2 OEM High Capacity Add-on
+- Entitlement: Ratio 1/1 (if licensed under the PVU metric), No Metric(if licensed under the RVU metric)
+- Use Limitations: Use by Principal Program
+
+HCL Commerce Developer
+- Entitlement: No Metric
+
+"Ratio n/m" means that Licensee receives some number of entitlements for the Supporting Program ('n') for every specified number of entitlements of the Principal Program ('m') as a whole. Unless otherwise specified, the number of entitlements for the Supporting Program is rounded up to a multiple of 'n'. For example, if a Program includes 100 PVUs for a Supporting Program for every 500 PVUs obtained of the Principal Program and Licensee acquires 1,200 PVUs of the Program, Licensee may install the Supporting Program and have processor cores available to or managed by it of up to 300 PVUs. Those PVUs would not need to be counted as part of the total PVU requirement for Licensee's installation of the Program on account of the installation of the Supporting Program (although those PVUs might need to be counted for other reasons, such as the processor cores being made available to the Principal Program, as well).
+
+"No Metric" means this Supporting Program may be installed on as many machines and used by as many persons as is reasonably necessary within the use limitations that apply to this Supporting Program.
+
+"Use by Principal Program" means that the Supporting Program is provided exclusively for use by the Principal Program. Neither Licensee nor any application, program or device is authorized to directly use or access the services of the Supporting Program except Licensee may access the Supporting Program to perform administrative functions for the Supporting Program such as backup, recovery and authorized configuration.
+

@@ -1,0 +1,503 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+
+## Default values for HCL Commerce V9
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
+arch:
+  amd64: "3 - Most preferred"
+  ppc64le: "0 - Do not use"
+  s390x: "0 - Do not use"
+
+## To view the license, run "helm install license ./ --set license=view --dry-run"
+## In order to deploy HCL Commerce, set the license to "accept" by accepting the license
+license: not_accepted
+
+## Common configuration for all component Docker 
+common:
+  ## HCL Commerce Production Information
+  productVersion: 9.1
+
+  ## Commerce environment info
+  tenant: demo
+  environmentName: qa
+  environmentType: auth
+
+  ## Search type [solr|elastic]
+  searchEngine: elastic
+
+  ## The name of the secret which contains the vault token
+  vaultTokenSecret: "vault-token-secret"
+
+  ## DBType, options: db2, oracle
+  dbType: db2
+
+  ## The docker registry repository with "<docker_registry_domain>[:port]/" format
+  imageRepo: my-docker-registry.io:5000/
+
+  ## Default value of spiUserName is configured for Commerce Version 9 sample Db2 Docker. 
+  ## Please correct this value to match your spi user name configured in your environment
+  spiUserName: spiuser
+
+  ## The AES encrypted value of the spiuser password
+  ## This value can be obtained by running wcs_encrypt.sh utility from utility container
+  ## Visit https://help.hcltechsw.com/commerce/9.0.0/install/tasks/tiginstall_definespi.html to find more details
+  spiUserPwdAes:
+
+  ## Base64 encoded value for <spiuser>:<password>
+  ## This value can be obtained by running "echo -n <spiuser>:<password> | base64"
+  spiUserPwdBase64:
+
+  ## Vault v1 api url. Following default value is for development mode vault deployed in vault name space 
+  vaultUrl: http://vault-consul.vault.svc.cluster.local:8200/v1
+
+  ## External domain used for ingress and store preview URL
+  ## For example. in hostname store.demoqaauth.mycompany.com , .mycompany.com would be the External Domain name.
+  externalDomain: .mycompany.com
+
+  ## Default value for BindingConfigMap; you can change the default config map name. 
+  ## If you use vault as configuration mode, you should set it as empty value
+  bindingConfigMap: 
+
+  ## As default, configMode is Vault
+  configureMode: Vault
+
+  ## Input the imagePull Secret Name which created by admin, in case you have image pull access control cross namespace
+  ## kubectl create secret docker-registry myregistrykey --docker-server=<cluster_CA_domain>:8500 --docker-username=<user_name> --docker-password=<user_password> --docker-email=<user_email>
+  imagePullSecrets: 
+  
+  ## If you need to force-pull Docker image, use Always
+  imagePullPolicy: IfNotPresent
+
+  ## Specify service account
+  serviceAccountName: default
+
+  ## When dataIngressEnabled is set to true, it will create ingress to for data platform services, such as nifi, ingest and query services for PD. 
+  ## Please keep it as false for production for security reason
+  dataIngressEnabled: false
+
+  ## ingress controller [nginx|gke]
+  ##   nginx - nginx ingress controller
+  ##   gke - cloud load balancing using HTTP(S) Load Balancer in GKE
+  ingressController: nginx
+
+  ## When migrating from V7 or V8, there is an option to deploy the old Aurora based store in transaction server
+  ## In this case, set localStoreEnabled to be true to allow service and ingress to be configured properly
+  ## By default it is not enabled as the default Aurora store comes with V9 is remote, i.e. run on it's own server
+  localStoreEnabled: false
+
+## Default to use vault as CA to issue certificate
+vaultCA:
+  enabled: true
+  # dnsNameInSubjectAlternativeName: None
+  # containerHostname: None
+
+## IngressSecret is used to specify whether Helm needs to auto-generate the secret for ingress. For production environment, you can choose generate the secret with real CA certificate.
+ingressSecret:
+  autoCreate: true
+  replaceExist: true
+
+## In previous helmchart for Commerce 9.0.x.x, the deployment matches the following labels to select pods
+##   app (WCSV9)
+##   chart ({{ .Chart.Name }}, e.g ibm-websphere-commerce)
+##   release ({{ .Release.Name }}, e.g demo-qa-auth)
+##   heritage ({{ .Release.Service }}, e.g Helm)
+##   component ({{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}{{.Values.xxApp.name}}, 
+##              e.g demoqaauthcrs-app)
+##   group ({{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{ .Values.common.environmentType }}, e.g demoqaauth)
+## 
+## In this helmchart, the app and chart values are updated. This would cause helm upgrade fail as the LabelSelector is immutable.
+## 
+## To upgrade v9.0.x.x deployment to v9.1.x.x using this chart without downtime,
+## specify the labels below to match the existing deployment.
+##
+## For new deployment, leave the values commented
+## 
+backwardCompatibility:
+  selector: {}
+    ## In V9.0.x.x helmchart, app is specified as WCSV9 by default
+    #app: WCSV9
+
+    ## In V9.0.x.x helmchart, chart is specified as ibm-websphere-commerce by default 
+    #chart: ibm-websphere-commerce
+
+    ## Specify any extra labels to match deployment to pods
+    #extraSelector:
+      #label1: value1
+      #label2: value2
+
+## HCL Cache is used by HCL Commerce V9 by default starting from V9.1.0.0
+## The following detailed configuration will be used to create a config map and then be passed to each Commerce application
+hclCache:
+  configMap:
+    # content for cache_cfg-ext.yaml
+    cache_cfg_ext: |-
+      redis:
+        enabled: true
+        yamlConfig: "/SETUP/hcl-cache/redis_cfg.yaml" # Please leave this line untouched
+    # content for redis_cfg.yaml
+    redis_cfg: |-
+      singleServerConfig:
+        idleConnectionTimeout: 10000
+        connectTimeout: 3000
+        timeout: 1000
+        retryAttempts: 1
+        retryInterval: 500
+        subscriptionsPerConnection: 5
+        sslEnableEndpointIdentification: true
+        sslProvider: "JDK"
+        pingConnectionInterval: 0
+        keepAlive: true
+        tcpNoDelay: true
+        address: "redis://redis-master.redis.svc.cluster.local:6379"
+        subscriptionConnectionMinimumIdleSize: 1
+        subscriptionConnectionPoolSize: 50
+        connectionMinimumIdleSize: 24
+        connectionPoolSize: 64
+        database: 0
+        dnsMonitoringInterval: 5000
+        password: "${JNDI/ENCRYPTED:REDIS_PASSWORD_ENCRYPT:-}"
+      threads: 16
+      nettyThreads: 32
+      referenceEnabled: true
+      transportMode: "NIO"
+      lockWatchdogTimeout: 30000
+      keepPubSubOrder: true
+      decodeInExecutor: false
+      useScriptCache: false
+      minCleanUpDelay: 5
+      maxCleanUpDelay: 1800
+      addressResolverGroupFactory: !<org.redisson.connection.DnsAddressResolverGroupFactory> {}
+
+## CreateSampleConfig supports quick deploy with the HCL Commerce sample Db2 Docker image, which can be used with your authoring environments, If you deploy on different tenant and env, update the DBHOSTNAME.
+createSampleConfig: 
+  enabled: false
+  dbHostName: demoqaauthdb
+  dbName: mall
+  dbUser: wcs
+  dbPass: wcs1
+  dbPort: 50000
+  dbaUser: db2inst1
+  dbaPassEncrypt:
+  dbPassEncrypt:
+
+## Flag to enable metrics. Enabled by default
+metrics:
+  enabled: true
+  ## Flag to enable service monitor. Disabled by default
+  serviceMonitor:
+    enabled: false
+    ## Specify a namespace in which to install the ServiceMonitor resource. 
+    ## Default to use the same release namespace where commerce is deployed to
+    # namespace: monitoring
+    
+    # interval between service monitoring requests
+    interval: 15s
+
+    ## Defaults to what's used if you follow CoreOS [Prometheus Install Instructions](https://github.com/helm/charts/tree/master/stable/prometheus-operator#tldr)
+    ## [Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#prometheus-operator-1)
+    ## [Kube Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#exporters)
+    selector:
+      prometheus: kube-prometheus
+
+
+#######################################################
+## Following are individual application configuration #
+#######################################################
+
+tsDb:
+  ## By default, the sample Db2 Docker image is used in the deployment.
+  enabled: true
+  name: ts-db
+  image: commerce/ts-db
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  nodeLabel: ""
+
+tsApp:
+  name: ts-app
+  replica: 1
+  image: commerce/ts-app
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 4096Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## uncomment following property and set a proper merchant key to overwrite the merchant key in transaction server
+  #merchantKey: 
+  ## when using custom envParameters, use key: value format
+  envParameters: 
+    auth: {}
+    live: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+searchAppMaster:
+  name: search-app-master
+  image: commerce/search-app
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  ## Specify exist PVC for search repeater
+  persistentVolumeClaim: ""
+  fileBeatConfigMap: ""
+
+searchAppRepeater:
+  name: search-app-repeater
+  image: commerce/search-app
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  ## Specify exist PVC for search repeater
+  persistentVolumeClaim: ""
+  fileBeatConfigMap: ""
+
+searchAppSlave:
+  name: search-app-slave
+  replica: 1
+  image: commerce/search-app
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+tsWeb:
+  name: ts-web
+  replica: 1
+  image: commerce/ts-web
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+toolingWeb:
+  name: tooling-web
+  replica: 1
+  image: commerce/tooling-web
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 1024Mi
+      cpu: 500m
+    limits:
+      memory: 2048Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+  
+storeWeb:
+  enabled: true
+  name: store-web
+  replica: 1
+  image: commerce/store-web
+  tag: v9-latest
+  resources:
+    requests:
+      memory: 1024Mi
+      cpu: 500m
+    limits:
+      memory: 2048Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters:
+    auth: {}
+    live: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+crsApp:
+  enabled: true
+  name: crs-app
+  image: commerce/crs-app
+  tag: v9-latest
+  replica: 1
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters:
+    auth: {}
+    live: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+xcApp:
+  enabled: true
+  name: xc-app
+  image: commerce/xc-app
+  tag: v9-latest
+  replica: 1
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format 
+  envParameters:
+    auth: {}
+    live: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+nifiApp:
+  name: nifi-app
+  image: commerce/search-nifi-app
+  tag: v9-latest
+  replica: 1
+  resources:
+    requests:
+      memory: 5120Mi
+      cpu: 500m
+    limits:
+      memory: 7168Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  persistentVolumeClaim: ""
+  fileBeatConfigMap: ""
+
+registryApp:
+  name: registry-app
+  image: commerce/search-registry-app
+  tag: v9-latest
+  replica: 1
+  resources:
+    requests:
+      memory: 1024Mi
+      cpu: 500m
+    limits:
+      memory: 2048Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+ingestApp:
+  name: ingest-app
+  image: commerce/search-ingest-app
+  tag: v9-latest
+  replica: 1
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+queryApp:
+  name: query-app
+  image: commerce/search-query-app
+  tag: v9-latest
+  replica:
+    auth: 1
+    live: 1
+    data: 1
+  resources:
+    auth:
+      requests:
+        memory: 2048Mi
+        cpu: 500m
+      limits:
+        memory: 4096Mi
+        cpu: 2
+    live:
+      requests:
+        memory: 2048Mi
+        cpu: 500m
+      limits:
+        memory: 4096Mi
+        cpu: 2
+    data:
+      requests:
+        memory: 2048Mi
+        cpu: 500m
+      limits:
+        memory: 3072Mi
+        cpu: 2
+  ## when using custom envParameters, use key: value format
+  envParameters:
+    auth: {}
+    live: {}
+    data: {}
+  nodeLabel: ""
+  fileBeatConfigMap: ""
+
+supportC:
+  image: commerce/supportcontainer
+  tag: 2.1.0
+
+fileBeat:
+  enabled: false
+  image: commerce/filebeat
+  tag: 1.0.1
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 500m
+    limits:
+      memory: 4096Mi
+      cpu: 2
+  elkServer: ""
+
+## Specify the Docker image for Helm test. centos:latest is the default Docker image that is used for Helm test.
+test:
+  image: docker.io/centos:latest

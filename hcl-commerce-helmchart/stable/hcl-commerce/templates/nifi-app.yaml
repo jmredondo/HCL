@@ -1,0 +1,222 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if and (eq .Values.common.environmentType "share") (eq .Values.common.searchEngine "elastic") }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{.Values.nifiApp.name}}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector: 
+    matchLabels:
+      chart: {{ .Chart.Name }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{.Values.nifiApp.name}}
+      group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        productName: "HCL Commerce"
+        productVersion: {{ .Values.common.productVersion | quote }}
+        deployTime: {{ now }}
+      labels:
+        app: HCL-Commerce
+        chart: {{ .Chart.Name }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        component: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}{{.Values.nifiApp.name}}
+        group: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}
+    spec:
+      affinity:
+        nodeAffinity:
+           {{- if .Values.nifiApp.nodeLabel }}
+           requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: wc-node-select-flag
+                  operator: In
+                  values: 
+                  - {{ .Values.nifiApp.nodeLabel }}
+           {{- else }}
+           requiredDuringSchedulingIgnoredDuringExecution:
+           {{- include "nodeAffinityRequiredDuringScheduling" . | indent 8 }}
+           {{- end }}   
+           preferredDuringSchedulingIgnoredDuringExecution:
+           {{- include "nodeAffinityPreferredDuringScheduling" . | indent 8 }}
+      {{- include "nifiapp-podAntiAffinity" . | indent 6 }}   
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      serviceAccountName: {{ .Values.common.serviceAccountName | default "default" }}
+      volumes:
+        - name: logs-sharing
+          emptyDir: {}
+      {{- if .Values.nifiApp.persistentVolumeClaim }}
+        - name: {{ .Values.common.tenant }}{{ .Values.common.environmentName}}-nifi-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.nifiApp.persistentVolumeClaim }}
+      {{- end }}
+      {{- if .Values.common.bindingConfigMap }}
+        - name: config-volume
+          configMap:
+            name: {{ .Values.common.bindingConfigMap }} 
+      {{- end }}
+      {{- if and .Values.fileBeat.enabled .Values.nifiApp.fileBeatConfigMap }}
+        - name: filebeat-config-nifi-app
+          configMap:
+            name: {{ .Values.nifiApp.fileBeatConfigMap }}
+      {{- end }}
+      {{- if .Values.common.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.common.imagePullSecrets }}
+      {{- end }}
+      containers:
+      - name: nifi-app
+        image: "{{ .Values.common.imageRepo }}{{ .Values.nifiApp.image }}:{{ .Values.nifiApp.tag }}"
+        {{- if .Values.common.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.nifiApp.resources | indent 12 }}
+        env:
+        - name: "LICENSE"
+          value: {{ .Values.license | quote }}
+        - name: "CONFIGURE_MODE"
+          value: {{ .Values.common.configureMode | quote }}
+        - name: "ENVIRONMENT"
+          value: {{ .Values.common.environmentName | quote }}
+        - name: "TENANT"
+          value: {{ .Values.common.tenant | quote }}
+        - name: "DBTYPE"
+          value: {{ .Values.common.dbType | quote }}
+        - name: "DOMAIN_NAME"
+          value: "{{ .Release.Namespace }}.svc.cluster.local"
+        - name: "VAULT_CA"
+          value: {{ .Values.vaultCA.enabled | quote }}
+        {{- if (or (eq .Values.common.configureMode "Vault") .Values.vaultCA.enabled) }}
+        - name: "VAULT_URL"
+          value: {{ .Values.common.vaultUrl | quote  }}
+        {{- if .Values.common.vaultTokenSecret }}
+        - name: "VAULT_TOKEN"
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.common.vaultTokenSecret }}
+              key: VAULT_TOKEN
+        {{- end }}
+        {{- end }}       
+{{- if .Values.nifiApp.envParameters }}
+     {{- range $key, $value := .Values.nifiApp.envParameters }}
+        - name: {{ $key | quote }}
+          value: {{ $value | quote }}
+     {{- end }} 
+{{- end }}
+        ports: 
+        - containerPort: 30600
+          name: port30600
+          protocol: TCP
+        - containerPort: 30700
+          name: port30700
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 30600
+            scheme: HTTP
+          initialDelaySeconds: 600
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 30600
+            scheme: HTTP
+        securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+        volumeMounts:
+          - name: logs-sharing
+            mountPath: /opt/nifi/nifi-current/dockerdata/logs
+        {{- if .Values.nifiApp.persistentVolumeClaim }}
+          - name:  {{ .Values.common.tenant }}{{ .Values.common.environmentName}}-nifi-volume
+            mountPath: /opt/nifi/nifi-current/dockerdata
+        {{- end }}
+        {{- if .Values.common.bindingConfigMap }}
+          - name: config-volume
+            mountPath: /SETUP/ext-config/config.properties
+            subPath: config.properties
+            readOnly: false      
+        {{- end }}
+{{- if .Values.fileBeat.enabled }} 
+      - name: filebeat
+        image: "{{ .Values.common.imageRepo }}{{ .Values.fileBeat.image }}:{{ .Values.fileBeat.tag }}"
+        {{- if .Values.common.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.fileBeat.resources | indent 12 }}
+        args: ["-indexName", "{{ .Values.common.tenant }}-{{ .Values.common.environmentName}}", "-targetELK", "{{ .Values.fileBeat.elkServer }}", "-componentType", "nifi-app"]
+        securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+        volumeMounts:
+        - name: logs-sharing
+          mountPath: /log
+{{- if .Values.nifiApp.fileBeatConfigMap }}
+        - name: filebeat-config-nifi-app
+          mountPath: /etc/filebeat
+{{- end }}
+{{- end }}
+{{- end }}

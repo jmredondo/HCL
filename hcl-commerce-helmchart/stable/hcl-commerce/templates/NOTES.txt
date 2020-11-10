@@ -1,0 +1,80 @@
+{{- if eq .Values.license "accept" -}}
+Chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+{{- if eq .Values.common.environmentType "share" }}
+HCL Commerce V9 shared components (new tooling{{ if eq .Values.common.searchEngine "elastic"}} and data platform{{end}}) have been deployed, and it will take several minutes to fully start.
+
+If you haven't deployed the HCL Commerce auth or live, you can deploy it now.
+helm install {{ .Values.common.tenant }}-{{ .Values.common.environmentName }}-auth <path-to-helmchart> -f <custom-values-yaml-file> -n <namespace>
+helm install {{ .Values.common.tenant }}-{{ .Values.common.environmentName }}-live <path-to-helmchart> -f <custom-values-yaml-file> -n <namespace>
+
+{{- else }}
+HCL Commerce V9 {{ .Release.Name }} release startup will take average 10-15 minutes with sequence.
+
+Access Environment:
+
+1. Check ingress server IP address.
+kubectl get ingress -n <Namespace>
+
+
+2. Create the ingress server IP and hostname mapping on your server by editing the  /etc/hosts file.
+
+<Ingress_IP> tsapp.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+<Ingress_IP> cmc.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+<Ingress_IP> accelerator.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+<Ingress_IP> admin.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+<Ingress_IP> org.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+{{- if or (.Values.crsApp.enabled) (.Values.common.localStoreEnabled) }}
+<Ingress_IP> store.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+{{- end }}
+{{- if and (.Values.storeWeb.enabled) (eq .Values.common.searchEngine "elastic") }}
+<Ingress_IP> www.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+{{- end }}
+{{- if or (and (eq .Values.common.searchEngine "solr") (eq .Values.common.environmentType "auth")) (eq .Values.common.searchEngine "elastic") }}
+<Ingress_IP> search.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+{{- end }}
+{{- if and (eq .Values.common.searchEngine "solr") (eq .Values.common.environmentType "live") }}
+<Ingress_IP> searchrepeater.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}
+{{- end }}
+
+3. Access the environment with following URLs:
+{{- if or (.Values.crsApp.enabled) (.Values.common.localStoreEnabled) }}
+Aurora Store Front:
+https://store.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}/wcs/shop/en/auroraesite
+{{ end }}
+
+{{- if and (.Values.storeWeb.enabled) (eq .Values.common.searchEngine "elastic") }}
+React Store Front:
+https://www.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}/
+{{- end }}
+
+Management Center:
+https://cmc.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}/lobtools/cmc/ManagementCenter
+
+Organization Admin Console:
+https://org.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}/webapp/wcs/orgadmin/servlet/ToolsLogon?XMLFile=buyerconsole.BuyAdminConsoleLogon
+
+Accelerator:
+https://accelerator.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}/webapp/wcs/tools/servlet/ToolsLogon?XMLFile=common.mcLogon
+
+Commerce Admin Console:
+https://admin.{{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{ .Values.common.environmentType }}{{ .Values.common.externalDomain }}/webapp/wcs/admin/servlet/ToolsLogon?XMLFile=adminconsole.AdminConsoleLogon
+{{- end }}
+{{- end }}
+
+{{- if eq .Values.license "view" }}
+**************************************************************************
+    LICENSE
+**************************************************************************
+
+{{ .Files.Get "LICENSES/notices" }}
+
+{{ .Files.Get "LICENSES/LA_en" }}
+
+{{ .Files.Get "LICENSES/MLA.txt" }}
+**************************************************************************
+{{- end }}
+
+
+
+
+

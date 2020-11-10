@@ -1,0 +1,34 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if and (eq .Values.common.environmentType "share") (eq .Values.common.searchEngine "elastic") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.queryApp.name}}
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.queryApp.name}}
+    group: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    cloud.google.com/app-protocols: '{"port30901":"HTTPS","port30900":"HTTP"}'
+spec:
+  type: NodePort
+  ports:
+  - port: 30900
+    name: port30900
+  - port: 30901
+    name: port30901
+  {{- if .Values.metrics.enabled }}
+  - port: 30280
+    name: metrics
+  {{- end }}
+  selector:
+    component: {{ .Values.common.tenant }}{{ .Values.common.environmentName }}{{.Values.queryApp.name}}
+{{- end -}}

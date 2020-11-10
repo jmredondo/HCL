@@ -1,0 +1,108 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+{{- if or .Values.ingressSecret.autoCreate  .Values.createSampleConfig.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: HCL-Commerce
+    chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: wcs-pre-install-{{ .Values.common.tenant | lower}}{{ .Values.common.environmentName | lower}}{{ .Values.common.environmentType }}-{{ randAlphaNum 10 | lower }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": "hook-succeeded"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  backoffLimit: 5
+  activeDeadlineSeconds: 100
+  template:
+    metadata:
+      labels:
+        app: HCL-Commerce
+        chart: {{ .Chart.Name }}-{{ .Chart.Version}}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+    spec:
+      affinity:
+      {{- include "nodeaffinity" . | indent 6 }}
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      serviceAccountName: {{ .Values.common.serviceAccountName | default "default" }}
+      restartPolicy: Never
+      {{- if .Values.common.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.common.imagePullSecrets }}
+      {{- end }}   
+      containers:
+      {{- if .Values.ingressSecret.autoCreate }}
+        - name: pre-install-job-createsecret-{{ .Values.common.tenant | lower}}{{ .Values.common.environmentName | lower}}{{ .Values.common.environmentType }}-{{ randAlphaNum 10 | lower }}
+          image: {{ .Values.common.imageRepo }}{{ .Values.supportC.image }}:{{ .Values.supportC.tag }}
+          {{- if .Values.common.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+          {{- end }}
+          args: ['createsecret', '-tenant',{{ .Values.common.tenant | quote }},'-env',{{ .Values.common.environmentName | quote }},'-envtype',{{ .Values.common.environmentType | quote }},'-domain', {{ .Values.common.externalDomain | quote }}, '-namespace',{{ .Release.Namespace | quote }},'-replace',{{ .Values.ingressSecret.replaceExist | quote }}]
+          securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+      {{- end -}}
+      {{- if .Values.createSampleConfig.enabled }}
+        - name: pre-install-job-creatsampleconfig-{{ .Values.common.tenant | lower}}{{ .Values.common.environmentName | lower}}{{ .Values.common.environmentType }}-{{ randAlphaNum 10 | lower }}
+          image: {{ .Values.common.imageRepo }}{{ .Values.supportC.image }}:{{ .Values.supportC.tag }}
+          {{- if .Values.common.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+          {{- end }}
+          args: ['createsampleconf', '-tenant',{{ .Values.common.tenant | quote}},'-env',{{ .Values.common.environmentName | quote }},'-envtype',{{ .Values.common.environmentType | quote }},'-namespace',{{ .Release.Namespace | quote }},'-dbhost',{{ .Values.createSampleConfig.dbHostName | quote }},'-name','config.properties','-dbname',{{ .Values.createSampleConfig.dbName | quote }},'-dbuser',{{ .Values.createSampleConfig.dbUser | quote }},'-dbpass',{{ .Values.createSampleConfig.dbPass | quote }},'-dbport',{{ .Values.createSampleConfig.dbPort | quote }},'-dbtype',{{ .Values.common.dbType | quote }},'-dbauser',{{ .Values.createSampleConfig.dbaUser | quote }},'-dbapwdencrypt',{{ .Values.createSampleConfig.dbaPassEncrypt  | quote }},'-dbpwdencrypt',{{ .Values.createSampleConfig.dbPassEncrypt | quote }}]
+          securityContext:
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+            privileged: false
+            capabilities:
+              drop:
+              - all
+              add:
+              - CHOWN
+              - DAC_OVERRIDE
+              - FOWNER
+              - FSETID
+              - KILL
+              - SETGID
+              - SETUID
+              - SETPCAP
+              - NET_BIND_SERVICE
+              - NET_RAW
+              - SYS_CHROOT
+              - MKNOD
+              - AUDIT_WRITE
+              - SETFCAP
+      {{ end -}}
+{{- end -}}

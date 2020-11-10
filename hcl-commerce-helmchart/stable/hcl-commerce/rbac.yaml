@@ -1,0 +1,40 @@
+######################################################
+# Licensed Materials - Property of HCL Technologies
+#  HCL Commerce
+#  (C) Copyright HCL Technologies Limited 1996, 2020
+######################################################
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: commerce-deploy-support-<namespace>
+  namespace: <namespace>
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list","create","delete","patch","update"]
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "watch", "list","create","delete","patch","update"]
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods","pods/log"]
+  verbs: ["get", "watch", "list","create","delete","patch","update"]
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["configmaps"]
+  verbs: ["get", "watch", "list","create","delete","patch","update"]
+---
+
+# This role binding allows default SA to read pods in the "<namespace>" namespace.
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata: 
+  name: commerce-deploy-support-<namespace>
+  namespace: <namespace>
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: <namespace>
+roleRef:
+  kind: Role
+  name: commerce-deploy-support-<namespace>
+  apiGroup: rbac.authorization.k8s.io
